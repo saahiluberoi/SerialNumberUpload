@@ -1,0 +1,40 @@
+{% extends 'base.html' %}
+
+{% block content %}
+
+<!-- Main Body -->
+<div class="w3-content" style="width: 85%; height:95%; margin-top:80px; border: 5px; box-shadow: 5px 7px 10px;">
+    <h2 align="center"> Upload Serial Numbers to M3</h2>
+    <br>
+    <div class = "w3-container" position="relative" style="width: 90%; height: 90%; ">
+        <form action="process_file/" method="POST" enctype="multipart/form-data">
+            <h3><label for="file-type">File Type</label></h3>
+            <input type="radio" id="file1" name="radio" value="Continuous Gas Flow">
+            <label for="file1">Continuous Gas Flow</label>
+            <input type="radio" id="file2" name="radio" value="Storage Heaters">
+            <label for="file2">Storage Heaters</label><br>
+            <br>
+            <h3><label for="file">Upload Excel Sheet</label></h3>
+            <input type="file" name="file" value="" required>
+            <br><br>
+            <input style="align:center;" type="submit" value="Submit"><br><br>
+        </form>
+    </div>
+    <br>
+</div>
+{% endblock %}
+<script>
+      $(".second,.third").hide();
+        $('input[type="radio"]').on("change",function () {
+            var FVal = $('input[name="number"]:checked').val();
+            console.log(FVal);
+            if(FVal!='one'){
+                $(".divcont").hide();
+                $(".second").show();
+            }else{
+                 $(".divcont").hide();
+                $(".first").show();
+
+            }
+        });
+</script>
