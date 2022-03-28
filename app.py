@@ -1,11 +1,11 @@
 import json
-from datetime import datetime
+
 import pandas as pd
 import requests
 from flask import Flask, request, render_template
 from flask_crontab import Crontab
 
-import user
+import user, m3
 
 app = Flask(__name__, template_folder='template')
 crontab = Crontab(app)
@@ -33,45 +33,13 @@ def process_file():
 
             # check radio button value
             if request.form['radio'] == 'Storage Heaters':
-                store_series_data(df, file)
+                store_series_data(df)
             else:
-                m3_operation(_val, file)
-    return 'File Uploaded'
-    # m3_operation(_val, file)
+                m3_operation(_val)
+    return 'Processing File'
 
 
-def store_series_data(df, file):
-    try:
-        start_list = []
-        for value in df:
-            n = df.apply(lambda row: row['QTY'] + 1, axis=1)
-            a = value
-            xn = a + (n - 1)
-            while a <= xn:
-                if a != xn:
-                    start_list.append(a)
-                a = a + 1
-
-        list_string = [str(item) for item in start_list]
-        date_time = datetime.today()
-        for val in list_string:
-            data_list = {
-                "FileName": file.filename,
-                "SerialNumbers": val,
-                "Status": "Accepted",
-                "TimeStamp": date_time
-            }
-        print("Passed")
-        # send_data(data_list)
-    except Exception as e:
-        print(e)
-        return ValueError('File Invalid')
-
-
-def m3_operation(_val, file):
-    # Get item description from M3
-    _api = 'MMS200MI/'
-    _transaction = 'GetItmBasic/'
+def m3_operation(_val):
     try:
         # Empty Table before inserting
         user.my_col.delete_many({})
@@ -79,17 +47,21 @@ def m3_operation(_val, file):
             # Get Manufacturing Dates
             _year = '20' + str(value['MANUFACTURING DATE'])[0:2]
             _full_date = '20' + str(value['MANUFACTURING DATE'])
+
+            # Get Serial Numbers
             _serial = str(value['SERIAL NO.'])[5:]
+
+            # M3 API Call
             params = {'ITNO': value['DUX CODE'], 'CONO': '100', 'LNCD': 'EN'}
-            response = requests.get(user.url + _api + _transaction, params=params, headers=user.headers, auth=('INFORBC\#DUXFEA', 'L3t5F1x$TufF12345'))
+            response = requests.get(m3.url + m3.api + m3.transaction, params=params, headers=m3.headers, auth=('INFORBC\#DUXFEA', 'L3t5F1x$TufF12345'))
             _ITDS_list = json.loads(response.text)
+            # Insert to MongoDB
             for key in _ITDS_list['MIRecord']:
                 for key_2 in key['NameValue']:
                     if key_2['Name'] == 'ITDS':
                         _ITDS = key_2['Value']
                         # Set Values for MongoDB
                         data_list = {
-                            "FILE_NAME": file.filename,
                             "CUOW": 9900,
                             "CONO": 100,
                             "DIVI": 'H01',
@@ -114,22 +86,56 @@ def m3_operation(_val, file):
         return ValueError('File Invalid')
 
 
-# Send to M3
-# @crontab.job(minute='*/5')
-def send_data(data_list):
-    _api = 'SOS100MI/'
-    _transaction = 'AddIndItem/'
-
+# Series Functionality
+def store_series_data(df):
     try:
-        response = requests.get(user.url + _api + _transaction, params=data_list, headers=user.headers, auth=('INFORBC\#DUXFEA', 'L3t5F1x$TufF12345'))
-        return response.text[response.text.find('<Message>') + 8:response.text.find('</Message>')]
+        # Empty Table before inserting
+        user.series_data.delete_many({})
+        # Clean Data
+        data = pd.read_excel(df, sheet_name="sheet2", skiprows=[0], converters={" ": user.convert(df)}, dtype={" ": str}, usecols=["Model No.", "QTY", "Starting SN", "Production Date"])
+        # Empty DataFrame
+        new_df = pd.DataFrame(columns=["Model No.", "QTY", "Serial Number", "Production Date"])
+        n = 0
+        # Start Series and load into the empty dataframe
+        for index, row in data.iterrows():
+            for qty in range(row["QTY"]):
+                new_serial = row["Starting SN"] + qty
+                df = pd.DataFrame({"Model No.": row["Model No."], "Serial Number": new_serial, "Production Date": row["Production Date"]}, index=[0])
+                new_df.loc[n] = df.loc[0]
+                n += 1
+        # Convert to JSON
+        json_data = new_df.to_json(orient="records")
+        values = json.loads(json_data)
 
+        for val in values:
+            _year = val["Production Date"]
+            _itno = val['Model No.']
+            # M3 API Call
+            params = {'ITNO': _itno, 'CONO': '100', 'LNCD': 'GB'}
+            response = m3.get_ITDS_from_M3(params)
+            data_list = {
+                "CUOW": 9900,
+                "CONO": 100,
+                "DIVI": 'H01',
+                "ITDS": response,
+                "LNCD": 'EN',
+                "ITNO": val['Model No.'],
+                "SERI": val['Serial Number'],
+                "INNO": val['Serial Number'],
+                "CUPL": 9900,
+                "INGR": 'TEMPLATE',
+                "CFE6": val['Production Date'],
+                "MLYR": _year,
+                "DEDA": val['Production Date'],
+            }
+            # insert to mongoDB
+            user.series_data.insert_one(data_list)
+        return 'Success'
     except Exception as e:
         print(e)
-        message = response.text[response.text.find('<Message>') + 9:response.text.find('</Message>')]
-        return message
+        return ValueError('File Invalid')
 
 
-# @crontab.job(minute='*/5')
 if __name__ == '__main__':
     app.run(debug=True)
+    app.env = 'development'
