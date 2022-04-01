@@ -36,49 +36,54 @@ def process_file():
                 store_series_data(df)
             else:
                 m3_operation(_val)
-    return 'Processing File'
+    return render_template('result.html')
 
 
 def m3_operation(_val):
     try:
         # Empty Table before inserting
         user.my_col.delete_many({})
-        for value in _val:
+        for val in _val:
             # Get Manufacturing Dates
-            _year = '20' + str(value['MANUFACTURING DATE'])[0:2]
-            _full_date = '20' + str(value['MANUFACTURING DATE'])
+            _year = '20' + str(val['MANUFACTURING DATE'])[0:2]
+            _full_date = '20' + str(val['MANUFACTURING DATE'])
 
             # Get Serial Numbers
-            _serial = str(value['SERIAL NO.'])[5:]
+            _serial = str(val['SERIAL NO.'])[5:]
 
             # M3 API Call
-            params = {'ITNO': value['DUX CODE'], 'CONO': '100', 'LNCD': 'EN'}
-            response = requests.get(m3.url + m3.api + m3.transaction, params=params, headers=m3.headers, auth=('INFORBC\#DUXFEA', 'L3t5F1x$TufF12345'))
-            _ITDS_list = json.loads(response.text)
-            # Insert to MongoDB
-            for key in _ITDS_list['MIRecord']:
-                for key_2 in key['NameValue']:
-                    if key_2['Name'] == 'ITDS':
-                        _ITDS = key_2['Value']
-                        # Set Values for MongoDB
-                        data_list = {
-                            "CUOW": 9900,
-                            "CONO": 100,
-                            "DIVI": 'H01',
-                            "ITDS": _ITDS,
-                            "LNCD": 'EN',
-                            "ITNO": value['DUX CODE'],
-                            "SERI": _serial,
-                            "INNO": _serial,
-                            "CUPL": 9900,
-                            "INGR": 'TEMPLATE',
-                            "CFE6": _full_date,
-                            "MLYR": _year,
-                            "DEDA": value['MANUFACTURING DATE']
-                        }
-                # Insert to MongoDb
-                user.my_col.insert_one(data_list)
-        print(response.reason)
+            params = {'ITNO': val['DUX CODE'], 'CONO': '100', 'LNCD': 'EN'}
+            response = m3.get_ITDS_from_M3(params)
+            # Set values for MongoDB
+            data_list = {
+                "CUOW": 9900,
+                "CONO": 100,
+                "DIVI": 'H01',
+                "ITDS": response,
+                "LNCD": 'EN',
+                "ITNO": val['DUX CODE'],
+                "SERI": _serial,
+                "INNO": _serial,
+                "CUPL": 9900,
+                "INGR": 'TEMPLATE',
+                "CFE6": _full_date,
+                "MLYR": _year,
+                "DEDA": val['MANUFACTURING DATE']
+            }
+            # Insert to MongoDb
+            user.my_col.insert_one(data_list)
+            # list_item = []
+            # table_data = "<tr><td>ITNO</td><td>Desc</td><td>Serial</td></tr>"
+            # list_item.append(table_data)
+            # # Show result
+            # for y in user.my_col.find():
+            #     a = "<tr><td>%s</td>" % y['ITNO']
+            #     list_item.append(a)
+            #     b = "<td>%s</td>" % y['ITDS']
+            #     list_item.append(b)
+            #     c = "<td>%s</td></tr>" % y['SERI']
+            #     list_item.append(c)
+        return m3.send_data(data_list)
 
     # Catch all exceptions
     except Exception as e:
@@ -113,13 +118,15 @@ def store_series_data(df):
             # M3 API Call
             params = {'ITNO': _itno, 'CONO': '100', 'LNCD': 'GB'}
             response = m3.get_ITDS_from_M3(params)
+            # Set Values for MongoDB
+        # return m3.pass_data_to_MongoDB(response, val, _year, _itno)
             data_list = {
                 "CUOW": 9900,
                 "CONO": 100,
                 "DIVI": 'H01',
                 "ITDS": response,
                 "LNCD": 'EN',
-                "ITNO": val['Model No.'],
+                "ITNO": _itno,
                 "SERI": val['Serial Number'],
                 "INNO": val['Serial Number'],
                 "CUPL": 9900,
@@ -130,7 +137,7 @@ def store_series_data(df):
             }
             # insert to mongoDB
             user.series_data.insert_one(data_list)
-        return 'Success'
+        pass
     except Exception as e:
         print(e)
         return ValueError('File Invalid')
