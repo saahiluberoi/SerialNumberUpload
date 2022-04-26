@@ -5,7 +5,8 @@ import requests
 from flask import Flask, request, render_template
 from flask_crontab import Crontab
 
-import user, m3
+import user
+import m3
 
 app = Flask(__name__, template_folder='template')
 crontab = Crontab(app)
@@ -24,25 +25,31 @@ def process_file():
         file = request.files['file']
         file.save(file.filename)
         if file:
-            # Read the file
-            df = pd.read_excel(file)
-
-            # Convert to JSON
-            _json_data = df.to_json(orient='records')
-            _val = json.loads(_json_data)
-
-            # check radio button value
-            if request.form['radio'] == 'Storage Heaters':
-                store_series_data(df)
-            else:
-                m3_operation(_val)
-    return render_template('result.html')
+            try:
+                # Read File
+                df = pd.read_excel(file)
+                # Convert to JSON
+                data = df.to_json(orient='records')
+                # Convert to list
+                _val = json.loads(data)
+                # check radio button value
+                if request.form['radio'] == 'Storage Heaters':
+                    store_series_data(df)
+                else:
+                    m3_operation(_val)
+                # Call M3 API
+                return m3_operation(_val)
+            except Exception as e:
+                print(e)
+                return ValueError('File Invalid')
+    return render_template('result.html', name='upload')
 
 
 def m3_operation(_val):
     try:
         # Empty Table before inserting
         user.my_col.delete_many({})
+        all_data = []
         for val in _val:
             # Get Manufacturing Dates
             _year = '20' + str(val['MANUFACTURING DATE'])[0:2]
@@ -50,10 +57,12 @@ def m3_operation(_val):
 
             # Get Serial Numbers
             _serial = str(val['SERIAL NO.'])[5:]
+            _itno = val['DUX CODE']
 
             # M3 API Call
             params = {'ITNO': val['DUX CODE'], 'CONO': '100', 'LNCD': 'EN'}
             response = m3.get_ITDS_from_M3(params)
+            data_list = m3.data_to_m3(response, _itno, _serial, _year)
             # Set values for MongoDB
             data_list = {
                 "CUOW": 9900,
@@ -61,7 +70,7 @@ def m3_operation(_val):
                 "DIVI": 'H01',
                 "ITDS": response,
                 "LNCD": 'EN',
-                "ITNO": val['DUX CODE'],
+                "ITNO": _itno,
                 "SERI": _serial,
                 "INNO": _serial,
                 "CUPL": 9900,
@@ -72,17 +81,7 @@ def m3_operation(_val):
             }
             # Insert to MongoDb
             user.my_col.insert_one(data_list)
-            # list_item = []
-            # table_data = "<tr><td>ITNO</td><td>Desc</td><td>Serial</td></tr>"
-            # list_item.append(table_data)
-            # # Show result
-            # for y in user.my_col.find():
-            #     a = "<tr><td>%s</td>" % y['ITNO']
-            #     list_item.append(a)
-            #     b = "<td>%s</td>" % y['ITDS']
-            #     list_item.append(b)
-            #     c = "<td>%s</td></tr>" % y['SERI']
-            #     list_item.append(c)
+            all_data.append(data_list)
         return m3.send_data(data_list)
 
     # Catch all exceptions
