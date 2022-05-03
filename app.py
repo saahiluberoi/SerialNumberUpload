@@ -48,8 +48,9 @@ def process_file():
 def m3_operation(_val):
     try:
         # Empty Table before inserting
-        user.my_col.delete_many({})
+        # user.my_col.delete_many({})
         all_data = []
+        data_list = []
         for val in _val:
             # Get Manufacturing Dates
             _year = '20' + str(val['MANUFACTURING DATE'])[0:2]
@@ -62,27 +63,27 @@ def m3_operation(_val):
             # M3 API Call
             params = {'ITNO': val['DUX CODE'], 'CONO': '100', 'LNCD': 'EN'}
             response = m3.get_ITDS_from_M3(params)
-            data_list = m3.data_to_m3(response, _itno, _serial, _year)
+            data_list = m3.data_to_m3(response, _year, _itno, _serial)
             # Set values for MongoDB
-            data_list = {
-                "CUOW": 9900,
-                "CONO": 100,
-                "DIVI": 'H01',
-                "ITDS": response,
-                "LNCD": 'EN',
-                "ITNO": _itno,
-                "SERI": _serial,
-                "INNO": _serial,
-                "CUPL": 9900,
-                "INGR": 'TEMPLATE',
-                "CFE6": _full_date,
-                "MLYR": _year,
-                "DEDA": val['MANUFACTURING DATE']
-            }
+            # data_list = {
+            #     "CUOW": 9900,
+            #     "CONO": 100,
+            #     "DIVI": 'H01',
+            #     "ITDS": response,
+            #     "LNCD": 'EN',
+            #     "ITNO": _itno,
+            #     "SERI": _serial,
+            #     "INNO": _serial,
+            #     "CUPL": 9900,
+            #     "INGR": 'TEMPLATE',
+            #     "CFE6": _full_date,
+            #     "MLYR": _year,
+            #     "DEDA": val['MANUFACTURING DATE']
+            # }
             # Insert to MongoDb
-            user.my_col.insert_one(data_list)
+            # user.my_col.insert_one(data_list)
             all_data.append(data_list)
-        return m3.send_data(data_list)
+            return m3.send_data(data_list)
 
     # Catch all exceptions
     except Exception as e:
@@ -143,5 +144,6 @@ def store_series_data(df):
 
 
 if __name__ == '__main__':
-    app.run(debug=True)
+    app.run(debug=True, host='0.0.0.0')
     app.env = 'development'
+

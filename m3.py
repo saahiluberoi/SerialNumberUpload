@@ -48,7 +48,7 @@ def send_data(data_list):
     try:
         # print('Sending data to M3')
         print(data_list)
-        response = requests.post(url + _api + _transaction, params=data_list, headers=headers,
+        response = requests.get(url + _api + _transaction, params=data_list, headers=headers,
                                  auth=('INFORBC\#DUXFEA', 'L3t5F1x$TufF12345'))
         return response.text[response.text.find('<Message>') + 8:response.text.find('</Message>')]
 
