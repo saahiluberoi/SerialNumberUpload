@@ -1,5 +1,5 @@
 name = "serialnumberupload"
-workers = 3
+workers = 4
 bind = "0.0.0.0:5001"
 forwarded_allow_ips = '*'
 loglevel = 'DEBUG'

@@ -1,7 +1,6 @@
 Flask==2.1.2
 pymongo[srv]==4.1.1
 Flask-PyMongo==2.3.0
-flask-crontab==0.1.2
 pandas==1.4.2
 python-dateutil==2.8.2
 sqlparse==0.4.2
@@ -16,3 +15,5 @@ requests==2.27.1
 dask==2022.5.0
 zappa
 gunicorn
+xlrd
+pyodbc
