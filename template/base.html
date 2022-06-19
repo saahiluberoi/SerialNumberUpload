@@ -2,27 +2,86 @@
 <html lang="en">
 <head>
     <!-- Required meta tags -->
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <!-- Bootstrap CSS -->
-    <link rel="scripts.js" href="scripts/scripts.js">
-    <link rel="stylesheet" href="https://www.w3schools.com/w3css/4/w3.css">
-    <link rel="stylesheet" href="https://www.w3schools.com/lib/w3-theme-black.css">
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css">
-    <title>Upload Serial Number to M3</title>
+        <meta charset="UTF-8">
+    <!--Let browser know website is optimized for mobile-->
+        <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+    <!-- Stylesheets -->
+      <!--Import compiled and minified materialize.css-->
+        <link text="text/css" rel="stylesheet" href="{{ url_for('static', filename='css/materialize.min.css')}}" >
+        <link type="text/css" rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+<!--        <link rel="stylesheet" href="https://www.w3schools.com/w3css/4/w3.css">-->
+<!--        <link rel="stylesheet" href="https://www.w3schools.com/lib/w3-theme-black.css">-->
+
+        <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.4.1/css/bootstrap.min.css"
+              integrity="sha384-Vkoo8x4CGsO3+Hhxv8T/Q5PaXtkKtu6ug5TOeNV6gBiFeWPGFN9MuhOf23Q9Ifjh"
+              crossorigin="anonymous"/>
+
+    <!--Import Google Icon Font-->
+        <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
+        <!--Blue:  #428df5; #F9C642-->
     <style>
-        body {background-color:#F9C642;}
+        body {background-color:white}
     </style>
+
+    <title>Serial Number Upload</title>
+
 </head>
 <body>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.3.1/jquery.min.js"></script>
-    <script src="https://cdnjs.csloudflare.com/ajax/libs/jqueryui/1.12.1/jquery-ui.min.js"></script>
+<noscript>You need to enable JavaScript to run this app.</noscript>
 <!-- Navbar -->
-    <div class="w3-top">
-      <div class="w3-bar w3-top w3-left-align w3-large w3-theme">
-          <a href="home.html" class="button is-primary is-outlined w3-bar-item w3-center-align w3-large w3-button w3-theme-l1 w3-hover-white" >Home Page</a>
-      </div>
+    <div class="nav-fixed" >
+        <nav>
+            <div class="nav-wrapper" style="background-color:#0069b4"> <!--#47443b; #ee6e73;-->
+               <ul>
+                <li>
+                    <a class="grey-text text-lighten-4 waves-blue " href="{{ url_for('homepage') }}" >
+                   <span style="font-size: 20px; ">Home</span>
+                    </a>
+                </li>
+               </ul>
+            </div>
+        </nav>
     </div>
 {% block content %} {% endblock %}
+
+<!-- Footer -->
+<footer class="page-footer">
+          <div class="footer-copyright">
+            <div class="container">
+                © 2022 Copyright Dux Manufacturing Limited
+                 <a class="grey-text text-lighten-4 right" href="https://www.dux.com.au/">Dux Hot Water</a>
+            </div>
+        </div>
+</footer>
+<!-- <div class="w3-top"> <div class="w3-bar w3-top w3-left-align w3-large w3-theme">-->
+
+<!--JavaScript at end of body for optimized loading-->
+  <script src="https://code.jquery.com/jquery-3.4.1.min.js" integrity="sha256-CSXorXvZcTkaix6Yvo6HppcZGetbYMGWSFlBw8HfCJo=" crossorigin="anonymous"></script>
+  <script>window.jQuery || document.write('<script src="js/jquery-3.4.1.min.js"><\/script>')</script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/materialize/1.0.0/js/materialize.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.3.1/jquery.min.js"></script>
+  <script src="https://cdnjs.csloudflare.com/ajax/libs/jqueryui/1.12.1/jquery-ui.min.js"></script>
+
+<!-- Required JS -->
+    <link rel="scripts.js" href="scripts/js/scripts.js">
+    <link rel="scripts.js" href="scripts/js/plugin.js">
+    <link rel="scripts.js" href="scripts/js/main.js">
+
+<script>
+      $(".second,.third").hide();
+        $('input[type="radio"]').on("change",function () {
+            var FVal = $('input[name="number"]:checked').val();
+            console.log(FVal);
+            if(FVal!='one'){
+                $(".divcont").hide();
+                $(".second").show();
+            }else{
+                 $(".divcont").hide();
+                $(".first").show();
+
+            }
+        });
+</script>
+
 </body>
 </html>

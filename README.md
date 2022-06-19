@@ -10,12 +10,14 @@ This README would normally document whatever steps are necessary to get your app
 
 ### How do I get set up? ###
 
-* Summary of set up
-* Configuration
-* Dependencies
-* Database configuration
-* How to run tests
-* Deployment instructions
+* sudo apt-get upgrade -y
+* Create a virtual environment. python3 -m venv <**name_of_virtualEnv**>
+* Start the virtual environment. source **name_ov_virtualEnv**/bin/activate
+* cd SerialNumberUpload
+* pip install -r requirement.txt
+* export FLASK_APP=app.py
+* export FLASK_ENV=development/production (based on env)
+* 
 
 ### Contribution guidelines ###
 

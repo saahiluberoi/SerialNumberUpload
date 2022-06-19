@@ -3,38 +3,44 @@
 {% block content %}
 
 <!-- Main Body -->
-<div class="w3-content" style="width: 85%; height:95%; margin-top:80px; border: 5px; box-shadow: 5px 7px 10px; background-color:white">
-    <h2 align="center"> Upload Serial Numbers to M3</h2>
-    <br>
-    <div class = "w3-container" position="relative" style="width: 90%; height: 90%; ">
-        <form action="process_file/" method="POST" enctype="multipart/form-data">
-            <h3><label for="file-type">File Type</label></h3>
-            <input type="radio" id="file1" name="radio" value="Continuous Gas Flow">
-            <label for="file1">Continuous Gas Flow</label>
-<!--            <input type="radio" id="file2" name="radio" value="Storage Heaters">-->
-<!--            <label for="file2">Storage Heaters</label><br>-->
-            <br>
-            <h3><label for="file">Upload Excel Sheet</label></h3>
-            <input type="file" name="file" value="" required>
-            <br><br>
-            <input style="align:center;" type="submit" value="Submit"><br><br>
-        </form>
-    </div>
-    <br>
-</div>
-{% endblock %}
-<script>
-      $(".second,.third").hide();
-        $('input[type="radio"]').on("change",function () {
-            var FVal = $('input[name="number"]:checked').val();
-            console.log(FVal);
-            if(FVal!='one'){
-                $(".divcont").hide();
-                $(".second").show();
-            }else{
-                 $(".divcont").hide();
-                $(".first").show();
+<div class = "container" style="height: inherit; width:40%; margin-top:7%; border-radius: 20px; padding: 15px; background-color:white">
+    <h3 align="center" style="margin-top:1%"> Upload Serial Numbers to M3</h3>
+    <hr>
+    <div class = "container" position="relative" style="width: auto; height: auto; ">
+        <form class ="login-form" action="/result/" method="POST" enctype="multipart/form-data">
+            <div class="input-field" align="center">
+                <h4>
+                    File Type
+                </h4>
+                <dl>
+                    <dt>
+                        <label>
+                            <input type="checkbox" id="file" checked="checked" name="checkbox" value="Continuous Gas Flow"/>
+                            <span>Continuous Gas Flow</span>
+                        </label>
+                    </dt>
+<!--                    <dt>-->
+<!--                    <input type="radio" id="file2" name="radio" value="Storage Heaters">-->
+<!--                    <label for="file2">Storage Heaters</label></dt>-->
+                </dl>
+            </div>
 
-            }
-        });
-</script>
+            <div class="file-field input-field" align="center">
+                <h4>
+                    Upload Excel Sheet
+                </h4>
+                <div class="btn" style="width:30%">
+                    <span>Browse</span>
+                    <input type="file" name="file" value="" required/>
+                </div>
+                <div class="file-path-wrapper">
+                    <input class ="file-path validate" type="text" placeholder="Upload File" />
+                </div>
+            </div>
+                 <button type="submit" id="submit-button" class="waves-effect waves-blue btn" value="Submit">Submit</button>
+    </div>
+
+        </form>
+</div>
+
+{% endblock %}

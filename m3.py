@@ -1,7 +1,5 @@
 import json
-
 import requests
-
 import config as cfg
 
 """
@@ -38,7 +36,8 @@ class API_call:
         _year = '20' + str(val['MANUFACTURING DATE'])[0:2]
         # s = str(val['SERIAL NUMBER']).replace(str, '')
         # print(s)
-        _serial = str(val['SERIAL NO.'])[2:]
+        _serial = str(val['SERIAL NO.'])[::-1][10::-1]
+        print(_serial)
         _itno = val['DUX CODE']
         data_list = {
             "CUOW": 9900,
@@ -60,8 +59,6 @@ class API_call:
 
 # Send to M3
 def send_data(data_list):
-    _api = 'SOS100MI/'
-    _transaction = 'AddIndItem/'
     try:
         # print('Sending data to M3')
         # print(data_list)

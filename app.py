@@ -4,6 +4,7 @@ from flask import Flask, request, render_template
 import model as model
 
 app = Flask(__name__, template_folder='template')
+app.static_folder = 'static'
 
 
 # Render to Homepage
@@ -13,7 +14,7 @@ def homepage():
 
 
 # Render to Upload Page
-@app.route('/process_file/', methods=['GET', 'POST'])
+@app.route('/result/', methods=['GET', 'POST'])
 def process_file():
     if request.method == 'POST':
         file = request.files['file']
@@ -22,10 +23,10 @@ def process_file():
             # Read File
             df = pd.read_excel(file)
             # check radio button value
-            if request.form['radio'] == 'Storage Heaters':
-                model.store_series_data(df)
-            else:
+            if request.form['checkbox'] == 'Continuous Gas Flow':
                 model.continuous_data(df)
+            else:
+                model.store_series_data(df)
         return render_template('result.html')
 
 
