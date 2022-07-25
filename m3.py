@@ -1,6 +1,9 @@
 import json
+
 import requests
+import os.path
 import config as cfg
+from datetime import date, datetime
 
 """ 
 This route will make the API calls to M3
@@ -17,6 +20,14 @@ class API_call():
     send_api = 'SOS100MI/'
     send_transaction = 'AddIndItem/'
 
+    # Path to store the results
+    save_path = 'Downloads'
+    name = 'results.csv'
+    file_path = os.path.join(save_path, name)
+
+    # Date-Time Variable
+    today = datetime.now().strftime("%Y-%m-%d_%I-%M-%S_%p")
+
     """
     Function to set data in the correct format for M3
     """
@@ -25,9 +36,10 @@ class API_call():
         _full_date = '20' + str(val['MANUFACTURING DATE'])
         _year = '20' + str(val['MANUFACTURING DATE'])[0:2]
         # s = str(val['SERIAL NUMBER']).replace(str, '')
-        # print(s)
         _serial = str(val['SERIAL NO.'])[::-1][10::-1]
         print(_serial)
+
+        # Create a list of serial numbers
         _itno = val['DUX CODE']
         data_list = {
             "CUOW": 9900,
@@ -44,6 +56,9 @@ class API_call():
             "MLYR": _year,
             "DEDA": _full_date,
         }
+        # # Download the list of Serial numbers processed
+        file = open(API_call.today + ' - results.csv', 'a')
+        file.write(_serial + '\n')
         return data_list
 
 
